@@ -1,0 +1,20 @@
+{
+  "name": "InstaPay",
+  "version": "1.0.0",
+  "description": "A financial technology platform that allows hard working individuals the right to get paid daily for what they work instead of every two weeks.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jblewdv/InstaPay.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jblewdv/InstaPay/issues"
+  },
+  "homepage": "https://github.com/jblewdv/InstaPay#readme"
+}
