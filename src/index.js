@@ -82,7 +82,11 @@ app.get('/payout', function(request, response, next) {
       throw err;
     }
     transactions = transactionsResponse;
-    prettyPrintResponse(transactions);
+    for (var t in transactions.transactions) {
+      if (transactions.transactions[t]['category'].includes('Payment')) {
+        prettyPrintResponse(transactions.transactions[t]);
+      }
+    }
   });
 
   // BALANCE
@@ -94,8 +98,12 @@ app.get('/payout', function(request, response, next) {
     balance: balanceResponse;
   });
 
-  
+  // *************
 
+  // 1) Compile Direct Deposit transactions
+ 
+
+  // 2) Analyze spending behavior (cash-in vs. cash-out)
 
 });
 
