@@ -14,24 +14,13 @@ var PLAID_SECRET = envvar.string('PLAID_SECRET');
 var PLAID_PUBLIC_KEY = envvar.string('PLAID_PUBLIC_KEY');
 var PLAID_ENV = envvar.string('PLAID_ENV', 'sandbox');
 
-// PLAID_PRODUCTS is a comma-separated list of products to use when initializing
-// Link. Note that this list must contain 'assets' in order for the app to be
-// able to create and retrieve asset reports.
 var PLAID_PRODUCTS = envvar.string('PLAID_PRODUCTS', 'transactions');
-
-// PLAID_PRODUCTS is a comma-separated list of countries for which users
-// will be able to select institutions from.
 var PLAID_COUNTRY_CODES = envvar.string('PLAID_COUNTRY_CODES', 'US,CA,GB,FR,ES');
 
-
-// We store the access_token in memory - in production, store it in a secure
-// persistent data store
 var ACCESS_TOKEN = null;
 var PUBLIC_TOKEN = null;
 var ITEM_ID = null;
 
-// Initialize the Plaid client
-// Find your API keys in the Dashboard (https://dashboard.plaid.com/account/keys)
 var client = new plaid.Client(
   PLAID_CLIENT_ID,
   PLAID_SECRET,
@@ -57,9 +46,6 @@ app.get('/', function(request, response, next) {
   });
 });
 
-// Exchange token flow - exchange a Link public_token for
-// an API access_token
-// https://plaid.com/docs/#exchange-token-flow
 app.post('/get_access_token', function(request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
   client.exchangePublicToken(PUBLIC_TOKEN, function(error, tokenResponse) {
@@ -80,9 +66,6 @@ app.post('/get_access_token', function(request, response, next) {
   });
 });
 
-
-// Retrieve Transactions for an Item
-// https://plaid.com/docs/#transactions
 app.get('/transactions', function(request, response, next) {
   // Pull transactions for the Item for the last 30 days
   var startDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
@@ -103,23 +86,6 @@ app.get('/transactions', function(request, response, next) {
   });
 });
 
-// Retrieve Identity for an Item
-// https://plaid.com/docs/#identity
-app.get('/identity', function(request, response, next) {
-  client.getIdentity(ACCESS_TOKEN, function(error, identityResponse) {
-    if (error != null) {
-      prettyPrintResponse(error);
-      return response.json({
-        error: error,
-      });
-    }
-    prettyPrintResponse(identityResponse);
-    response.json({error: null, identity: identityResponse});
-  });
-});
-
-// Retrieve real-time Balances for each of an Item's accounts
-// https://plaid.com/docs/#balance
 app.get('/balance', function(request, response, next) {
   client.getBalance(ACCESS_TOKEN, function(error, balanceResponse) {
     if (error != null) {
@@ -130,111 +96,6 @@ app.get('/balance', function(request, response, next) {
     }
     prettyPrintResponse(balanceResponse);
     response.json({error: null, balance: balanceResponse});
-  });
-});
-
-// Retrieve an Item's accounts
-// https://plaid.com/docs/#accounts
-app.get('/accounts', function(request, response, next) {
-  client.getAccounts(ACCESS_TOKEN, function(error, accountsResponse) {
-    if (error != null) {
-      prettyPrintResponse(error);
-      return response.json({
-        error: error,
-      });
-    }
-    prettyPrintResponse(accountsResponse);
-    response.json({error: null, accounts: accountsResponse});
-  });
-});
-
-// Retrieve ACH or ETF Auth data for an Item's accounts
-// https://plaid.com/docs/#auth
-app.get('/auth', function(request, response, next) {
-  client.getAuth(ACCESS_TOKEN, function(error, authResponse) {
-    if (error != null) {
-      prettyPrintResponse(error);
-      return response.json({
-        error: error,
-      });
-    }
-    prettyPrintResponse(authResponse);
-    response.json({error: null, auth: authResponse});
-  });
-});
-
-// Create and then retrieve an Asset Report for one or more Items. Note that an
-// Asset Report can contain up to 100 items, but for simplicity we're only
-// including one Item here.
-// https://plaid.com/docs/#assets
-app.get('/assets', function(request, response, next) {
-  // You can specify up to two years of transaction history for an Asset
-  // Report.
-  var daysRequested = 10;
-
-  // The `options` object allows you to specify a webhook for Asset Report
-  // generation, as well as information that you want included in the Asset
-  // Report. All fields are optional.
-  var options = {
-    client_report_id: 'Custom Report ID #123',
-    // webhook: 'https://your-domain.tld/plaid-webhook',
-    user: {
-      client_user_id: 'Custom User ID #456',
-      first_name: 'Alice',
-      middle_name: 'Bobcat',
-      last_name: 'Cranberry',
-      ssn: '123-45-6789',
-      phone_number: '555-123-4567',
-      email: 'alice@example.com',
-    },
-  };
-  client.createAssetReport(
-    [ACCESS_TOKEN],
-    daysRequested,
-    options,
-    function(error, assetReportCreateResponse) {
-      if (error != null) {
-        prettyPrintResponse(error);
-        return response.json({
-          error: error,
-        });
-      }
-      prettyPrintResponse(assetReportCreateResponse);
-
-      var assetReportToken = assetReportCreateResponse.asset_report_token;
-      respondWithAssetReport(20, assetReportToken, client, response);
-    },
-  );
-});
-
-// Retrieve information about an Item
-// https://plaid.com/docs/#retrieve-item
-app.get('/item', function(request, response, next) {
-  // Pull the Item - this includes information about available products,
-  // billed products, webhook information, and more.
-  client.getItem(ACCESS_TOKEN, function(error, itemResponse) {
-    if (error != null) {
-      prettyPrintResponse(error);
-      return response.json({
-        error: error
-      });
-    }
-    // Also pull information about the institution
-    client.getInstitutionById(itemResponse.item.institution_id, function(err, instRes) {
-      if (err != null) {
-        var msg = 'Unable to pull institution information from the Plaid API.';
-        console.log(msg + '\n' + JSON.stringify(error));
-        return response.json({
-          error: msg
-        });
-      } else {
-        prettyPrintResponse(itemResponse);
-        response.json({
-          item: itemResponse.item,
-          institution: instRes.institution,
-        });
-      }
-    });
   });
 });
 
