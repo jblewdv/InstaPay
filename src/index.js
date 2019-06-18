@@ -66,8 +66,11 @@ app.post('/get_access_token', function(request, response, next) {
   });
 });
 
-app.get('/transactions', function(request, response, next) {
-  // Pull transactions for the Item for the last 30 days
+app.get('/payout', function(request, response, next) {
+  var transactions = null;
+  var balance = null;
+
+  // TRANSACTIONS
   var startDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
   var endDate = moment().format('YYYY-MM-DD');
   client.getTransactions(ACCESS_TOKEN, startDate, endDate, {
@@ -76,28 +79,26 @@ app.get('/transactions', function(request, response, next) {
   }, function(error, transactionsResponse) {
     if (error != null) {
       prettyPrintResponse(error);
-      return response.json({
-        error: error
-      });
-    } else {
-      prettyPrintResponse(transactionsResponse);
-      response.json({error: null, transactions: transactionsResponse});
+      throw err;
     }
+    transactions = transactionsResponse;
+    prettyPrintResponse(transactions);
   });
-});
 
-app.get('/balance', function(request, response, next) {
+  // BALANCE
   client.getBalance(ACCESS_TOKEN, function(error, balanceResponse) {
     if (error != null) {
       prettyPrintResponse(error);
-      return response.json({
-        error: error,
-      });
+      throw err;
     }
-    prettyPrintResponse(balanceResponse);
-    response.json({error: null, balance: balanceResponse});
+    balance: balanceResponse;
   });
+
+  
+
+
 });
+
 
 var server = app.listen(APP_PORT, function() {
   console.log('plaid-quickstart server listening on port ' + APP_PORT);

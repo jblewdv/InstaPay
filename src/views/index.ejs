@@ -32,6 +32,10 @@
 
         <div id="app" class="connected-view">
           <p>Now that you have linked your bank account you can start getting paid!</p>
+
+          <div class="box">
+            <h3 id="payout_value" class="box__heading">Daily Payout: </h3>
+          </div>
         </div>
       </div>
     </div>
@@ -58,12 +62,9 @@
         $.post('/get_access_token', {
           public_token: public_token
         }, function(data) {
-          $('#container').fadeOut('fast', function() {
-            $('#item_id').text(data.item_id);
-            $('#access_token').text(data.access_token);
-            $('#intro').hide();
-            $('#app, #steps').fadeIn('slow');
-          });
+          $.get('/payout', {}, function(data) {
+
+          });  
         });
       },
     });
@@ -72,18 +73,14 @@
       $.post('/set_access_token', {
         access_token: accessToken
       }, function(data) {
-        $('#container').fadeOut('fast', function() {
-          $('#item_id').text(data.item_id);
-          $('#access_token').text(accessToken);
-          $('#intro').hide();
-          $('#app, #steps').fadeIn('slow');
-        });
       });
     }
 
     $('#link-btn').on('click', function(e) {
       handler.open();
     });
+
+ 
   })(jQuery);
 
 function qs(key) {
